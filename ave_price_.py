@@ -91,7 +91,8 @@ def main():
         uploaded_file = st.file_uploader("Excelファイルを選択してください", type=['xlsx'])
 
         if uploaded_file is not None:
-            df = pd.read_excel(uploaded_file)
+            # '2012-' シートを読み込む
+            df = pd.read_excel(uploaded_file, sheet_name='2012-')
             months = st.slider("計算する期間を選択してください（月数）", 1, 24, 5)
 
             if st.button('平均単価を計算'):
@@ -109,7 +110,8 @@ def main():
         uploaded_file = st.file_uploader("Excelファイルを選択してください", type=['xlsx'])
 
         if uploaded_file is not None:
-            df = pd.read_excel(uploaded_file)
+            # '2019-' シートを読み込む
+            df = pd.read_excel(uploaded_file, sheet_name='2019-')
             months = st.slider("計算する期間を選択してください（月数）", 1, 24, 5)
 
             if st.button('平均単価を計算'):
