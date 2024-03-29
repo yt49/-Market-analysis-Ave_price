@@ -131,12 +131,13 @@ def main():
         uploaded_file = st.file_uploader("Excelファイルを選択してください", type=['xlsx'])
 
         if uploaded_file is not None:
-            data = pd.read_excel(uploaded_file)
+            # 8regions_database シートを読み込む
+            data = pd.read_excel(uploaded_file, sheet_name='8regions_database')
             months = st.slider("計算する期間を選択してください（月数）", 1, 24, 5)
 
             if st.button('平均単価を計算'):
                 result = data.groupby(['TYPE', 'BRAND', 'MODEL', 'USER TYPE', 'SHAFT MATERIAL', 'SHAFT FLEX']).apply(
-                    calculate_avg_price_gfk, months=months).reset_index(name='Ave_price')
+                    calculate_avg_price_gfk, months=months).reset_index(name='Ave_price')  
                 st.markdown(download_excel_gfk(result, months), unsafe_allow_html=True)
 
     elif option == 'GDT':
