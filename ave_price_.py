@@ -69,7 +69,7 @@ def calculate_avg_price_gdt(group, months):
     average_price = total_value / total_sales
     return pd.Series({'Unit Sales': total_sales, 'Value': total_value, 'Average Price': average_price})
 
-def download_excel_gdt(data, months):
+def download_excel_gdt(data):
     output = BytesIO()
     with pd.ExcelWriter(output, engine='xlsxwriter') as writer:
         data.to_excel(writer, sheet_name='Off', index=False)
