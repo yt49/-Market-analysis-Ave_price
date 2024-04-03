@@ -69,11 +69,12 @@ def calculate_avg_price_gdt(group, months):
     average_price = total_value / total_sales
     return pd.Series({'Unit Sales': total_sales, 'Value': total_value, 'Average Price': average_price})
 
-def download_excel_gdt(data):
+def download_excel_gdt(data, months):
     output = BytesIO()
     with pd.ExcelWriter(output, engine='xlsxwriter') as writer:
         data.to_excel(writer, sheet_name='Off', index=False)
     file_name = f"USAaverage_price_{months}ヵ月.xlsx"
+    output.seek(0)  
     b64 = base64.b64encode(output.getvalue()).decode()
     href = f'<a href="data:application/octet-stream;base64,{b64}" download="{file_name}">クリックしてダウンロード</a>'
     return href
