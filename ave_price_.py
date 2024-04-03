@@ -147,27 +147,33 @@ def main():
         uploaded_file = st.file_uploader("Excelファイルを選択してください", type=['xlsx'])
 
         if uploaded_file is not None:
-            df = pd.read_excel(uploaded_file)
-            df_selected = df[['Year', 'Month', 'On/Off', 'Product Type', 'Brand', 'Model', 'Unit Sales', 'Value']]
-            df_selected['Y+M'] = df_selected['Year'].astype(str) + '-' + df_selected['Month'].astype(str).str.zfill(2)
-            df_selected['Y+M'] = pd.to_datetime(df_selected['Y+M'], format='%Y-%m')
+            # Database シートを読み込む
+            df = pd.read_excel(uploaded_file, sheet_name='Database')
             months = st.slider("計算する期間を選択してください（月数）", 1, 24, 5)
 
             if st.button('集計する'):
+                # GDT の集計処理
+                df_selected = df[['Year', 'Month', 'On/Off', 'Product Type', 'Brand', 'Model', 'Unit Sales', 'Value']]
+                df_selected['Y+M'] = df_selected['Year'].astype(str) + '-' + df_selected['Month'].astype(str).str.zfill(2)
+                df_selected['Y+M'] = pd.to_datetime(df_selected['Y+M'], format='%Y-%m')
+
                 df_off = df_selected[df_selected['On/Off'] == 'off']
                 df_on = df_selected[df_selected['On/Off'] == 'on']
                 df_off_summed = df_off.groupby(['Model', 'On/Off', 'Product Type', 'Brand']).apply(
                     calculate_avg_price_gdt, months=months).reset_index()
                 df_on_summed = df_on.groupby(['Model', 'On/Off', 'Product Type', 'Brand']).apply(
                     calculate_avg_price_gdt, months=months).reset_index()
+
                 df_off_summed = df_off_summed[['On/Off', 'Product Type', 'Brand', 'Model', 'Unit Sales', 'Value', 'Average Price']]
                 df_on_summed = df_on_summed[['On/Off', 'Product Type', 'Brand', 'Model', 'Unit Sales', 'Value', 'Average Price']]
+
                 output = BytesIO()
                 with pd.ExcelWriter(output, engine='xlsxwriter') as writer:
                     df_off_summed.to_excel(writer, sheet_name='Off', index=False)
                     df_on_summed.to_excel(writer, sheet_name='On', index=False)
+
                 b64 = base64.b64encode(output.getvalue()).decode()
-                href = f'<a href="data:application/octet-stream;base64,{b64}" download="USAaverage_price.xlsx">クリックしてダウンロード</a>'
+                href = f'<a href="data:application/octet-stream;base64,{b64}" download="GDT_average_price.xlsx">クリックしてダウンロード</a>'
                 st.markdown(href, unsafe_allow_html=True)
 
 if __name__ == "__main__":
