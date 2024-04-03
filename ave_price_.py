@@ -18,8 +18,8 @@ def calculate_avg_price_yps_wood(model_data, months):
     avg_price = (total_value / total_units) * 1000 if total_units else 0  # 平均単価を1000倍して計算
     return avg_price
 
-def download_excel_yps_wood(data):
-    output_file_path = "Wood平均単価.xlsx"
+def download_excel_yps_wood(data, months):
+    output_file_path = f"Wood平均単価_{months}ヵ月.xlsx"
     data.to_excel(output_file_path, index=False)  # Excelファイルに保存
     with open(output_file_path, "rb") as file:
         excel_data = file.read()
@@ -33,8 +33,8 @@ def calculate_avg_price_yps_iron(model_data, months):
     avg_price = total_value / total_units * 1000
     return avg_price
 
-def download_excel_yps_iron(data):
-    output_file_path = "Iron平均単価.xlsx"
+def download_excel_yps_iron(data, months):
+    output_file_path = f"Iron平均単価_{months}ヵ月.xlsx"
     data.to_excel(output_file_path, index=False)
     with open(output_file_path, "rb") as file:
         excel_data = file.read()
@@ -69,12 +69,13 @@ def calculate_avg_price_gdt(group, months):
     average_price = total_value / total_sales
     return pd.Series({'Unit Sales': total_sales, 'Value': total_value, 'Average Price': average_price})
 
-def download_excel_gdt(data):
+def download_excel_gdt(data, months):
     output = BytesIO()
     with pd.ExcelWriter(output, engine='xlsxwriter') as writer:
         data.to_excel(writer, sheet_name='Off', index=False)
+    file_name = f"USAaverage_price_{months}ヵ月.xlsx"
     b64 = base64.b64encode(output.getvalue()).decode()
-    href = f'<a href="data:application/octet-stream;base64,{b64}" download="USAaverage_price.xlsx">クリックしてダウンロード</a>'
+    href = f'<a href="data:application/octet-stream;base64,{b64}" download="{file_name}">クリックしてダウンロード</a>'
     return href
 
 def main():
@@ -102,7 +103,7 @@ def main():
                 df_filtered['9'] = df_filtered['9'].astype(str).replace({'1': 'CUSTOM', '2': 'NORMAL', '3': 'OTHERS'})
                 df_output = df_filtered[['DATE', 'BRAND', 'SUB BRAND', 'MODEL', '性別', 'シャフト', 'ﾀｲﾌﾟ', '9']].drop_duplicates('MODEL')
                 df_output = pd.merge(df_output, df_summed, on='MODEL', how='left')
-                st.markdown(download_excel_yps_wood(df_output), unsafe_allow_html=True)
+                st.markdown(download_excel_yps_wood(df_output, months), unsafe_allow_html=True)
 
     elif option == 'YPS_Iron':
         st.subheader('YPS Iron 平均単価計算')
@@ -125,7 +126,7 @@ def main():
                 output_file_path = "Iron平均単価.xlsx"
                 df_output.to_excel(output_file_path, index=False)
                 st.write('**計算結果のダウンロード**')
-                st.markdown(download_excel_yps_iron(df_output), unsafe_allow_html=True)
+                st.markdown(download_excel_yps_iron(df_output, months), unsafe_allow_html=True)
 
     elif option == 'Gfk':
         st.subheader('Gfk 平均単価計算')
@@ -167,9 +168,7 @@ def main():
                 with pd.ExcelWriter(output, engine='xlsxwriter') as writer:
                     df_off_summed.to_excel(writer, sheet_name='Off', index=False)
                     df_on_summed.to_excel(writer, sheet_name='On', index=False)
-                b64 = base64.b64encode(output.getvalue()).decode()
-                href = f'<a href="data:application/octet-stream;base64,{b64}" download="USAaverage_price.xlsx">クリックしてダウンロード</a>'
-                st.markdown(href, unsafe_allow_html=True)
+                st.markdown(download_excel_gdt(output, months), unsafe_allow_html=True)
 
 if __name__ == "__main__":
     main()
